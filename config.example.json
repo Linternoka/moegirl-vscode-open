@@ -1,0 +1,7 @@
+{
+  "port": 8765,
+  "token": "change-me-please",
+  "vault": "",
+  "idleMinutes": 30,
+  "openInVSCode": true
+}
