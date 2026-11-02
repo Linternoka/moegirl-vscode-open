@@ -23,7 +23,7 @@ const configPath = path.join(here, 'config.json');
 const defaults = {
   port: 8765,
   token: 'change-me-please',
-  vault: 'D:\\萌百编辑',
+  vault: path.join(here, 'drafts'),
   openInVSCode: true,
   // 空闲多少分钟没人用就自动退出，0 = 不退出
   idleMinutes: 30,
@@ -91,7 +91,9 @@ async function readBody(req, limit = 16 * 1024 * 1024) {
 function launchCode(file) {
   // 必须把参数分开交给 cmd：把 `code -r "路径"` 当一整个字符串传时，
   // 中文路径会被 cmd 的代码页转坏，VS Code 拿到不存在的路径 → 打开空白缓冲区。
-  spawn('cmd.exe', ['/c', 'code', '-r', file], {
+  // 还要把 vault 目录一起传：VS Code 没开着这个工作区时，先把目录作为根打开，
+  // 文件才会落进正确的工作区、读到 .vscode/settings.json 的 wikitext 配置。
+  spawn('cmd.exe', ['/c', 'code', '-r', config.vault, file], {
     detached: true,
     stdio: 'ignore',
     windowsHide: true,
