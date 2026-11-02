@@ -7,6 +7,8 @@
  * 本工具由 AI 辅助生成，未经完整测试，不保证可用性。
  * 使用前请自行审阅代码，因使用造成的任何问题自负。
  *
+ * 开源地址：https://github.com/你的账号/moegirl-vscode-open
+ *
  * 用法：
  *   1. 在个人 common.js 里加载本页
  *   2. 本机跑配套的 server.mjs（Node 18+，监听 127.0.0.1:8765）
@@ -174,11 +176,25 @@
       });
   }
 
+  // 圆点颜色：任何一次桥请求的结果都立刻反映，不再等 30 秒轮询
+  function setDot(ok) {
+    dot.style.background = ok ? '#3fb950' : '#f85149';
+  }
+
   function bridgeCall(path, opts) {
     var url = BRIDGE + path + (path.indexOf('?') >= 0 ? '&' : '?') + 'token=' + encodeURIComponent(TOKEN);
-    return fetch(url, opts || {}).then(function (resp) {
-      return resp.json();
-    });
+    return fetch(url, opts || {})
+      .then(function (resp) {
+        return resp.json();
+      })
+      .then(function (json) {
+        setDot(true);
+        return json;
+      })
+      .catch(function (err) {
+        setDot(false);
+        throw err;
+      });
   }
 
   function doOpen(force) {
@@ -484,7 +500,12 @@
     restorePos();
     pingOnce();
     loadRecent();
-    setInterval(pingOnce, 30000);
+    setInterval(pingOnce, 10000);
+    // 页面从后台切回来时立刻探一次，别等下一轮
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) pingOnce();
+    });
+    window.addEventListener('focus', pingOnce);
   }
 
   if (document.readyState === 'loading') {
